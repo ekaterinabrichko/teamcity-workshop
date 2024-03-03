@@ -6,17 +6,6 @@ from data.user_data import UserData
 from entities.user import User, Role
 from resources.user_creds import SuperAdminCreds
 
-
-@pytest.fixture
-def session():
-    http_session = requests.Session()
-    yield http_session
-    http_session.close()
-
-@pytest.fixture
-def api_manager(session):
-    return ApiManager(session)
-
 @pytest.fixture
 def user_session():
     user_pool = []
@@ -33,15 +22,11 @@ def user_session():
         user.close_session()
 
 @pytest.fixture
-def super_admin(user_session, super_admin_creds):
+def super_admin(user_session):
     new_session = user_session()
     super_admin = User(SuperAdminCreds.USERNAME, SuperAdminCreds.PASSWORD, SuperAdminCreds.EMAIL, new_session,["SUPER_ADMIN", 'g'])
-    super_admin.api_object.auth_api.auth_and_get_csrf(super_admin_creds)
+    super_admin.api_manager.auth_api.auth_and_get_csrf(super_admin.creds)
     return super_admin
-
-@pytest.fixture
-def super_admin_creds():
-    return SuperAdminCreds.USERNAME, SuperAdminCreds.PASSWORD
 
 @pytest.fixture
 def user_create(user_session, super_admin):
@@ -49,7 +34,7 @@ def user_create(user_session, super_admin):
 
     def _user_create(role):
         user_data = UserData.create_user_data(role, scope = 'g')
-        super_admin.api_object.user_api.create_user(user_data)
+        super_admin.api_manager.user_api.create_user(user_data)
         new_session = user_session()
         created_user_pool.append(user_data['username'])
         return User(user_data['username'], user_data['password'], new_session, [Role(role)])
@@ -57,4 +42,4 @@ def user_create(user_session, super_admin):
     yield _user_create
 
     for username in created_user_pool:
-        super_admin.api_object.user_api.delete_user(username)
+        super_admin.api_manager.user_api.delete_user(username)
