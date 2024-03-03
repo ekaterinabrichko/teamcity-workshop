@@ -26,3 +26,8 @@ class DataGenerator:
         rest_characters = ''.join(faker_instance.random.choices(string.ascii_letters + string.digits, k=10))
         build_id = first_letter + rest_characters
         return build_id
+
+    @staticmethod
+    def fake_email():
+        generated_email = faker_instance.email()
+        return generated_email

@@ -8,7 +8,8 @@ from enums.host import BASE_URL
 class CustomRequester:
     base_headers = dict({"Content-Type": "application/json", "Accept": "application/json"})
 
-    def __init__(self):
+    def __init__(self, session):
+        self.session = session
         self.logger = logging.getLogger(__name__)
         self.base_url = BASE_URL
 
